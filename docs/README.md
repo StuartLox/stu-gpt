@@ -10,9 +10,9 @@ The resulting fine-tuned model can then be used to generate new text by sampling
 
 ## Transformer Architecture
 
+GPT is based primarily on transformer architecture which was introduced in 2017 in Google's paper "Attention is all you need". 
 
-
-GPT is based primarily on transformer architecture which was introduced in 2017 in Google's paper "Attention is all you need".  
+![transformer](assets/Transformer.png)
 
 The encoder takes as input a sequence of embeddings (representations of words or subwords) and generates a sequence of encoded embeddings, which capture the relationships between the words in the input sequence. Each layer in the encoder performs two operations: multi-head self-attention and a feedforward neural network.
 
