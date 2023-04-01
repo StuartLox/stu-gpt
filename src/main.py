@@ -6,7 +6,7 @@ from config.config import DataConfig, config_from_file
 from utils.custom_logger import setup_custom_logger
 from model.bigram import BigramLangaugeModel
 from model.gpt import GPTLanguageModel
-from exceptions import (
+from src.exceptions import (
     ModelNotFoundError,
     OptimizerNotFoundError,
 )
