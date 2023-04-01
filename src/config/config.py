@@ -1,6 +1,6 @@
 import configparser
-from dataclasses import dataclass
-
+from dataclasses import dataclass, field, fields
+from pathlib import Path
 
 class Config:
     pass
@@ -25,7 +25,16 @@ class DataConfig(Config):
     n_embd: int
     n_head: int
     n_layer: int
-    dropout: int
+    dropout: float
+
+
+    def __post_init__(self):
+        field_types = {field.name: field.type for field in fields(self)}
+        for attr, value in self.__dict__.items():
+            for _type in [int, bool, float, str]:
+                if field_types[attr] == _type:
+                    cast_value = _type(value)
+                    setattr(self, attr, cast_value)
 
 
 def config_from_file(section: str, into: Config, file_path: str) -> Config:
@@ -39,7 +48,8 @@ def config_from_file(section: str, into: Config, file_path: str) -> Config:
     returns: Config object
     """
     config = configparser.ConfigParser()
-    config.read_file(open(file_path))
+    path = Path(file_path).resolve()
+    config.read_file(open(path))
     config.sections()
 
     return into(**config[section])
@@ -49,6 +59,6 @@ if __name__ == "__main__":
     data_conf = config_from_file(
         section='data',
         into=DataConfig,
-        file_path='./config/config.cfg'
+        file_path=Path('src/config/config.cfg').resolve(),
     )
     print(data_conf)

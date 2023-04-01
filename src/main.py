@@ -6,7 +6,7 @@ from config.config import DataConfig, config_from_file
 from utils.custom_logger import setup_custom_logger
 from model.bigram import BigramLangaugeModel
 from model.gpt import GPTLanguageModel
-from src.exceptions import (
+from exceptions import (
     ModelNotFoundError,
     OptimizerNotFoundError,
 )
@@ -125,7 +125,7 @@ def train(
     :param optimizer: Optimizer to be used with the model
     :config DataConfig: Model and data configuration used for traning  
     """
-    for iter in range(int(config.steps)):
+    for iter in range(int(config.max_iters)):
         # sample a batch of data
         xb, yb = preprocessing.get_batch('train')
 
@@ -146,7 +146,7 @@ def train(
 
 def get_inference(preprocessing: Preprocessing, model: nn.Module, tokens: int):
     context = torch.zeros((1, 1), dtype=torch.long)
-    print(preprocessing.codec.decode(model.generate(context, max_new_tokens=500)[0].tolist()))
+    print(preprocessing.codec.decode(model.generate(context, max_new_tokens=tokens)[0].tolist()))
 
 
 

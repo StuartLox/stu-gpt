@@ -7,11 +7,11 @@ from impl.preprocessing import Preprocessing
 class Head(nn.Module):
     """ one head of self-attention """
 
-    def __init__(self, config: DataConfig):
+    def __init__(self, config: DataConfig, head_size: int):
         super().__init__()
-        self.key = nn.Linear(config.n_embd, config.head_size, bias=False)
-        self.query = nn.Linear(config.n_embd, config.head_size, bias=False)
-        self.value = nn.Linear(config.n_embd, config.head_size, bias=False)
+        self.key = nn.Linear(config.n_embd, head_size, bias=False)
+        self.query = nn.Linear(config.n_embd, head_size, bias=False)
+        self.value = nn.Linear(config.n_embd, head_size, bias=False)
         self.register_buffer('tril', torch.tril(torch.ones(config.block_size, config.block_size)))
 
         self.dropout = nn.Dropout(config.dropout)
@@ -46,8 +46,9 @@ class MultiHeadAttention(nn.Module):
 
     def __init__(self, config: DataConfig):
         super().__init__()
-        self.heads = nn.ModuleList([Head(config.head_size) for _ in range(config.num_heads)])
-        self.proj = nn.Linear(config.head_size * config.num_heads, config.n_embd)
+        head_size = config.n_embd // config.n_head
+        self.heads = nn.ModuleList([Head(config=config, head_size=head_size) for _ in range(config.n_head)])
+        self.proj = nn.Linear(head_size * config.n_head, config.n_embd)
         self.dropout = nn.Dropout(config.dropout)
 
     def forward(self, x):
@@ -79,9 +80,8 @@ class Block(nn.Module):
     def __init__(self, config: DataConfig):
         # n_embd: embedding dimension, n_head: the number of heads we'd like
         super().__init__()
-        head_size = config.n_embd // config.n_head
-        self.sa = MultiHeadAttention(config.n_head, head_size)
-        self.ffwd = FeedFoward(config.n_embd)
+        self.sa = MultiHeadAttention(config)
+        self.ffwd = FeedFoward(config)
         self.ln1 = nn.LayerNorm(config.n_embd)
         self.ln2 = nn.LayerNorm(config.n_embd)
 
@@ -99,7 +99,7 @@ class GPTLanguageModel(nn.Module):
 
         self.token_embedding_table = nn.Embedding(vocab_size, config.n_embd)
         self.position_embedding_table = nn.Embedding(config.block_size, config.n_embd)
-        self.blocks = nn.Sequential(*[Block(config.n_embd, n_head=config.n_head) for _ in range(config.n_layer)])
+        self.blocks = nn.Sequential(*[Block(config) for _ in range(config.n_layer)])
         self.ln_f = nn.LayerNorm(config.n_embd) # final layer norm
         self.lm_head = nn.Linear(config.n_embd, vocab_size)
 
@@ -119,7 +119,7 @@ class GPTLanguageModel(nn.Module):
 
         # idx and targets are both (B,T) tensor of integers
         tok_emb = self.token_embedding_table(idx) # (B,T,C)
-        pos_emb = self.position_embedding_table(torch.arange(T), device=self.config.device) # (T,C)
+        pos_emb = self.position_embedding_table(torch.arange(T)) # (T,C)
         x = tok_emb + pos_emb # (B,T,C)
         x = self.blocks(x) # (B,T,C)
         x = self.ln_f(x) # (B,T,C)
