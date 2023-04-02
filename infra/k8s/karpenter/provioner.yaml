@@ -28,6 +28,6 @@ metadata:
   name: my-provider
 spec:
   subnetSelector:
-    kubernetes.io/cluster/demo: owned
+    kubernetes.io/cluster/personal-eks: owned
   securityGroupSelector:
-    kubernetes.io/cluster/demo: owned
+    kubernetes.io/cluster/personal-eks: owned

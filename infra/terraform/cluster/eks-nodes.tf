@@ -30,11 +30,11 @@ resource "aws_iam_role_policy_attachment" "amazon-ec2-container-registry-read-on
 
 resource "aws_eks_node_group" "private-nodes" {
   cluster_name    = aws_eks_cluster.this.name
-  version         = "1.22"
+  version         = var.eks_cluster_version
   node_group_name = "private-nodes"
   node_role_arn   = aws_iam_role.nodes.arn
 
-  subnet_ids = var.subnet_ids
+  subnet_ids = var.worker_subnet
 
   capacity_type  = "ON_DEMAND"
   instance_types = ["t3.small"]
