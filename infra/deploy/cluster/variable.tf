@@ -1,7 +1,7 @@
 #
 # Variables Configuration
 #
-variable "cluster-name" {}
+variable "cluster_name" {}
 
 variable "vpc_id" {
   description = "VPC ID "
@@ -21,7 +21,7 @@ variable "subnet_ids" {
   description = "List of all subnet in cluster"
 }
 
-variable "kubernetes-server-instance-sg" {
+variable "kubernetes_server_instance_sg" {
   description = "Kubenetes control server security group"
 }
 

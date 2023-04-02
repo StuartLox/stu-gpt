@@ -8,7 +8,7 @@
 #
 
 #IAM Role
-resource "aws_iam_role" "worker-node-role" {
+resource "aws_iam_role" "worker_node_role" {
   name = "worker-nodes-role"
 
   assume_role_policy = <<POLICY
@@ -27,7 +27,7 @@ resource "aws_iam_role" "worker-node-role" {
 POLICY
 }
 
-resource "aws_iam_policy" "eks-tagging" {
+resource "aws_iam_policy" "eks_tagging" {
   name        = "production_resource_tagging_for_eks"
   path        = "/"
   description = "resource_tagging_for_eks"
@@ -55,39 +55,39 @@ EOF
 
 resource "aws_iam_role_policy_attachment" "worker-node-AmazonEKSWorkerNodePolicy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
-  role       = "${aws_iam_role.worker-node-role.name}"
+  role       = aws_iam_role.worker_node_role.name
 }
 
 resource "aws_iam_role_policy_attachment" "worker-node-AmazonEKS_CNI_Policy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
-  role       = "${aws_iam_role.worker-node-role.name}"
+  role       = aws_iam_role.worker_node_role.name
 }
 
 resource "aws_iam_role_policy_attachment" "worker-node-AmazonEC2ContainerRegistryReadOnly" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
-  role       = "${aws_iam_role.worker-node-role.name}"
+  role       = aws_iam_role.worker_node_role.name
 }
 
 resource "aws_iam_role_policy_attachment" "worker-node-AmazonEC2FullAccess" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2FullAccess"
-  role       = "${aws_iam_role.worker-node-role.name}"
+  role       = aws_iam_role.worker_node_role.name
 }
 
 resource "aws_iam_role_policy_attachment" "worker-node-resource_tagging_for_eks" {
-  policy_arn = "${aws_iam_policy.eks-tagging.arn}"
-  role       = "${aws_iam_role.worker-node-role.name}"
+  policy_arn = aws_iam_policy.eks_tagging.arn
+  role       = aws_iam_role.worker_node_role.name
 }
 
-resource "aws_iam_instance_profile" "worker-node" {
+resource "aws_iam_instance_profile" "worker_node" {
   name = "eks-worker-node"
-  role = "${aws_iam_role.worker-node-role.name}"
+  role = aws_iam_role.worker_node_role.name
 }
 
 #Security Group
-resource "aws_security_group" "worker-node-sg" {
+resource "aws_security_group" "worker_node_sg" {
   name        = "worker-nodeSG"
   description = "Security group for all nodes in the cluster"
-  vpc_id      = "${var.vpc_id}"
+  vpc_id      = var.vpc_id
 
   egress {
     from_port   = 0
@@ -97,47 +97,47 @@ resource "aws_security_group" "worker-node-sg" {
   }
 
   tags = {
-    "Name"                   = "worker-node-sg"
-    "kubernetes.io/cluster/" = "${var.cluster-name}"
+    "Name"                   = "worker_node_sg"
+    "kubernetes.io/cluster/" = var.cluster_name
   }
 }
 
-resource "aws_security_group_rule" "worker-node-ingress-self" {
+resource "aws_security_group_rule" "worker_node_ingress_self" {
   description              = "Allow node to communicate with each other"
   from_port                = 0
   protocol                 = "-1"
-  security_group_id        = "${aws_security_group.worker-node-sg.id}"
-  source_security_group_id = "${aws_security_group.worker-node-sg.id}"
+  security_group_id        = aws_security_group.worker_node_sg.id
+  source_security_group_id = aws_security_group.worker_node_sg.id
   to_port                  = 65535
   type                     = "ingress"
 }
 
-resource "aws_security_group_rule" "worker-node-ingress-cluster" {
+resource "aws_security_group_rule" "worker_node_ingress_cluster" {
   description              = "Allow worker Kubelets and pods to receive communication from the cluster control plane"
   from_port                = 1025
   protocol                 = "tcp"
-  security_group_id        = "${aws_security_group.worker-node-sg.id}"
-  source_security_group_id = "${aws_security_group.cluster-sg.id}"
+  security_group_id        = aws_security_group.worker_node_sg.id
+  source_security_group_id = aws_security_group.cluster_sg.id
   to_port                  = 65535
   type                     = "ingress"
 }
 
-resource "aws_security_group_rule" "worker-node-for-control-server" {
+resource "aws_security_group_rule" "worker_node_for_control_server" {
   description              = "Allow worker Kubelets and pods to receive communication from the control server"
   from_port                = 0
   protocol                 = "tcp"
-  security_group_id        = "${aws_security_group.worker-node-sg.id}"
-  source_security_group_id = "${var.kubernetes-server-instance-sg}"
+  security_group_id        = aws_security_group.worker_node_sg.id
+  source_security_group_id = var.kubernetes_server_instance_sg
   to_port                  = 65535
   type                     = "ingress"
 }
 
-resource "aws_security_group_rule" "worker-node-for-alb" {
+resource "aws_security_group_rule" "worker_node_for_alb" {
   description              = "Allow worker Kubelets and pods to receive communication from alb"
   from_port                = 0
   protocol                 = "tcp"
-  security_group_id        = "${aws_security_group.worker-node-sg.id}"
-  source_security_group_id = "${aws_security_group.eks_alb_sg.id}"
+  security_group_id        = aws_security_group.worker_node_sg.id
+  source_security_group_id = aws_security_group.eks_alb_sg.id
   to_port                  = 65535
   type                     = "ingress"
 }
@@ -149,21 +149,21 @@ resource "aws_security_group_rule" "worker-node-for-alb" {
 # More information: https://docs.aws.amazon.com/eks/latest/userguide/launch-workers.html
 
 locals {
-  worker-node-userdata = <<USERDATA
+  worker_node_userdata = <<USERDATA
 #!/bin/bash
 set -o xtrace
-/etc/eks/bootstrap.sh --apiserver-endpoint '${aws_eks_cluster.eks-cluster.endpoint}' --b64-cluster-ca '${aws_eks_cluster.eks-cluster.certificate_authority.0.data}' '${var.cluster-name}'
+/etc/eks/bootstrap.sh --apiserver-endpoint '${aws_eks_cluster.this.endpoint}' --b64-cluster-ca '${aws_eks_cluster.this.certificate_authority.0.data}' '${var.cluster_name}'
 USERDATA
 }
 
 #Launch Configuration
 resource "aws_launch_configuration" "worker" {
-  iam_instance_profile = "${aws_iam_instance_profile.worker-node.name}"
-  image_id             = "${var.instance_ami}"
-  instance_type        = "${var.instance_type}"
+  iam_instance_profile = aws_iam_instance_profile.worker_node.name
+  image_id             = var.instance_ami
+  instance_type        = var.instance_type
   name_prefix          = "worker-node"
-  security_groups      = ["${aws_security_group.worker-node-sg.id}"]
-  user_data_base64     = "${base64encode(local.worker-node-userdata)}"
+  security_groups      = [aws_security_group.worker_node_sg.id]
+  user_data_base64     = base64encode(local.worker_node_userdata)
 
   lifecycle {
     create_before_destroy = true
@@ -173,11 +173,11 @@ resource "aws_launch_configuration" "worker" {
 #Autoscalling Group
 resource "aws_autoscaling_group" "worker" {
   desired_capacity     = 5
-  launch_configuration = "${aws_launch_configuration.worker.id}"
+  launch_configuration = aws_launch_configuration.worker.id
   max_size             = 5
   min_size             = 2
   name                 = "worker-nodes"
-  vpc_zone_identifier  = ["${var.worker_subnet}"]
+  vpc_zone_identifier  = var.worker_subnet
 
   tag {
     key                 = "Name"
@@ -186,7 +186,7 @@ resource "aws_autoscaling_group" "worker" {
   }
 
   tag {
-    key                 = "kubernetes.io/cluster/${var.cluster-name}"
+    key                 = "kubernetes.io/cluster/${var.cluster_name}"
     value               = "owned"
     propagate_at_launch = true
   }

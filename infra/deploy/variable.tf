@@ -2,15 +2,7 @@ variable "region" {
   default = "ap-southeast-2"
 }
 
-variable "key" {
-  description = "Enter Key name"
-}
-
-variable "sub_ids" {
-  default = []
-}
-
-variable "instance-ami" {
+variable "instance_ami" {
   default = "ami-0159ec8365aea1724" # EKS AMI Sydney
 }
 
@@ -18,16 +10,22 @@ variable "instance_type" {
   default = "t3.medium"
 }
 
-variable "cluster-name" {
-  description = "Cluster Name"
+variable "key" {
+  default = ""
 }
 
-variable "server-name" {
+variable "cluster_name" {
+  description = "Cluster Name"
+  default = "personal-eks"
+}
+
+variable "server_name" {
   description = "Ec2 Server Name"
+  default = "worker_nodes"
 }
 
 variable "vpc_name" {
   description = "VPC name"
+  default = "personal-vpc"
 }
 
-variable "kube_config" {}

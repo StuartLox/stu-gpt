@@ -1,7 +1,7 @@
 data "template_file" "aws_auth" {
   template = "${file("${path.module}/templates/aws-auth.yml")}"
 
-  vars {
+  vars = {
     AWS_ROLE = "${module.eks.worker_role}"
   }
 }

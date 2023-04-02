@@ -11,7 +11,7 @@ metadata:
   namespace: kube-system
 data:
   mapRoles: |
-    - rolearn: ${aws_iam_role.worker-node-role.arn}
+    - rolearn: ${aws_iam_role.worker_node_role.arn}
       username: system:node:{{EC2PrivateDNSName}}
       groups:
         - system:bootstrappers
@@ -22,8 +22,8 @@ CONFIGMAPAWSAUTH
 apiVersion: v1
 clusters:
 - cluster:
-    server: ${aws_eks_cluster.eks-cluster.endpoint}
-    certificate-authority-data: ${aws_eks_cluster.eks-cluster.certificate_authority.0.data}
+    server: ${aws_eks_cluster.this.endpoint}
+    certificate-authority-data: ${aws_eks_cluster.this.certificate_authority.0.data}
   name: kubernetes
 contexts:
 - context:
@@ -42,7 +42,7 @@ users:
       args:
         - "token"
         - "-i"
-        - "${var.cluster-name}"
+        - "${var.cluster_name}"
 KUBECONFIG
 }
 
@@ -54,10 +54,10 @@ output "kubeconfig" {
   value = "${local.kubeconfig}"
 }
 
-output "cluster-name" {
-  value = "${aws_eks_cluster.eks-cluster.name}"
+output "cluster_name" {
+  value = "${aws_eks_cluster.this.name}"
 }
 
 output "worker_role" {
-  value = "${aws_iam_role.worker-node-role.arn}"
+  value = "${aws_iam_role.worker_node_role.arn}"
 }

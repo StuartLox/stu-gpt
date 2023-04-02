@@ -19,3 +19,7 @@ variable "owner" {
   description = "Owner of the application"
   default = "stu"
 }
+
+variable "k8_subnet" {
+ description = "Subnet for the K8s instances" 
+}

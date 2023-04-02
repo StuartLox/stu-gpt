@@ -1,5 +1,5 @@
-resource "aws_security_group" "kubernetes-server-instance-sg" {
-  name        = "kubernetes-server-instance-sg"
+resource "aws_security_group" "kubernetes_server_instance_sg" {
+  name        = "kubernetes_server_instance_sg"
   description = "kubectl_instance_sg"
   vpc_id      = "${var.vpc_id}"
 
@@ -17,18 +17,18 @@ resource "aws_security_group" "kubernetes-server-instance-sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags {
+  tags = {
     Name = "kubectl_server-SG"
   }
 }
 
-resource "aws_instance" "kubernetes-server" {
-  instance_type = "${var.instance_type}"
-  ami           = "${var.instance_ami}"
+resource "aws_instance" "kubernetes_server" {
+  instance_type = var.instance_type
+  ami           = var.instance_ami
 
-  # key_name               = "${var.instance_key}"
-  subnet_id              = "${var.k8-subnet}"
-  vpc_security_group_ids = ["${aws_security_group.kubernetes-server-instance-sg.id}"]
+  key_name               = var.instance_key
+  subnet_id              = var.k8_subnet
+  vpc_security_group_ids = aws_security_group.kubernetes_server_instance_sg.id
 
   root_block_device {
     volume_type           = "gp2"
@@ -36,13 +36,13 @@ resource "aws_instance" "kubernetes-server" {
     delete_on_termination = "true"
   }
 
-  tags {
+  tags = {
     owner = "${var.owner}"
   }
 }
 
 resource "aws_eip" "ip" {
-  instance = "${aws_instance.kubernetes-server.id}"
+  instance = aws_instance.kubernetes_server.id
   vpc      = true
 
   tags = {
