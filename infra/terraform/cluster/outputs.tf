@@ -58,6 +58,26 @@ output "cluster_name" {
   value = aws_eks_cluster.this.name
 }
 
+output "cluster_id" {
+  value = aws_eks_cluster.this.id
+}
+
 output "worker_role" {
   value = aws_iam_role.nodes.arn
+}
+
+output "cluster_endpoint" {
+  value = aws_eks_cluster.this.endpoint
+}
+
+output "aws_iam_instance_profile_karpenter_name" {
+  value = aws_iam_instance_profile.karpenter.name
+}
+
+output "cluster_ca_certificate" {
+  value = base64decode(aws_eks_cluster.this.certificate_authority[0].data)
+}
+
+output "karpenter_controller_role_arn" {
+  value = aws_iam_role.karpenter_controller.arn
 }

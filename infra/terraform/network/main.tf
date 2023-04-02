@@ -21,9 +21,9 @@ resource "aws_subnet" "public_subnet" {
   availability_zone = data.aws_availability_zones.available.names[count.index]
 
   tags = {
-    "Name"= "Public_subnet_${data.aws_availability_zones.available.names[count.index]}"
-    "kubernetes.io/cluster/${var.cluster_name}"="owned"
-    "kubernetes.io/role/elb"="1"
+    "Name"                                      = "Public_subnet_${data.aws_availability_zones.available.names[count.index]}"
+    "kubernetes.io/cluster/${var.cluster_name}" = "owned"
+    "kubernetes.io/role/elb"                    = "1"
   }
 }
 
@@ -35,9 +35,9 @@ resource "aws_subnet" "private_subnet" {
   availability_zone = data.aws_availability_zones.available.names[count.index]
 
   tags = {
-    "Name"="Private_subnet_${data.aws_availability_zones.available.names[count.index]}"
-    "kubernetes.io/cluster/${var.cluster_name}"= "owned"
-    "kubernetes.io/role/internal-elb"= "1"
+    "Name"                                      = "Private_subnet_${data.aws_availability_zones.available.names[count.index]}"
+    "kubernetes.io/cluster/${var.cluster_name}" = "owned"
+    "kubernetes.io/role/internal-elb"           = "1"
   }
 }
 
@@ -57,7 +57,7 @@ resource "aws_subnet" "master_subnet" {
 resource "aws_subnet" "worker_subnet" {
   count             = length(var.worker_subnet_cidr)
   vpc_id            = aws_vpc.this.id
-  cidr_block        = element(var.worker_subnet_cidr,count.index)
+  cidr_block        = element(var.worker_subnet_cidr, count.index)
   availability_zone = element(data.aws_availability_zones.available.names, count.index)
 
   tags = {

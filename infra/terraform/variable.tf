@@ -16,16 +16,16 @@ variable "key" {
 
 variable "cluster_name" {
   description = "Cluster Name"
-  default = "personal-eks"
+  default     = "personal-eks"
 }
 
 variable "server_name" {
   description = "Ec2 Server Name"
-  default = "worker_nodes"
+  default     = "worker_nodes"
 }
 
 variable "vpc_name" {
   description = "VPC name"
-  default = "personal-vpc"
+  default     = "personal-vpc"
 }
 

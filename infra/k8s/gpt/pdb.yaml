@@ -1,0 +1,9 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: gpt-pdb
+spec:
+  selector:
+    matchLabels:
+      app: gpt
+  maxUnavailable: 1

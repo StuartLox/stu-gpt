@@ -1,5 +1,5 @@
 locals {
-  iam_role_name          = "${var.cluster_name}-role"
+  iam_role_name = "${var.cluster_name}-role"
 }
 
 

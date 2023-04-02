@@ -24,10 +24,3 @@ In addition to the encoder, the Transformer architecture also includes positiona
 
 Overall, the Transformer architecture is highly effective in natural language processing tasks and has achieved state-of-the-art performance on many benchmarks.
 
-
-
-
-
-
-
-
