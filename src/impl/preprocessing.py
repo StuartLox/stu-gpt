@@ -36,7 +36,7 @@ class Preprocessing:
 
         data: List[int]: List of text encoded integers
         """
-        n = int(len(self.data) * float(self.config.train_val_split))
+        n = int(len(self.data) * self.config.train_val_split))
         self.train_data = self.data[:n]
         self.val_data = self.data[n:]
 
@@ -52,9 +52,8 @@ class Preprocessing:
         if split == 'val':
             data = self.val_data
 
-        # TODO - fix dataclass loading to remove redundant typecast
-        batch_size = int(self.config.batch_size)
-        block_size = int(self.config.block_size)
+        batch_size = self.config.batch_size
+        block_size = self.config.block_size
 
         start = len(data) - block_size
         ix = torch.randint(start, (batch_size, ))
