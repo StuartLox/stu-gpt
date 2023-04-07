@@ -36,7 +36,7 @@ class Preprocessing:
 
         data: List[int]: List of text encoded integers
         """
-        n = int(len(self.data) * self.config.train_val_split))
+        n = int(len(self.data) * self.config.train_val_split)
         self.train_data = self.data[:n]
         self.val_data = self.data[n:]
 
@@ -57,6 +57,6 @@ class Preprocessing:
 
         start = len(data) - block_size
         ix = torch.randint(start, (batch_size, ))
-        x = torch.stack([data[i:i+block_size] for i in ix])
-        y = torch.stack([data[i+1:i+block_size+1] for i in ix])
+        x = torch.stack([data[i:i + block_size] for i in ix])
+        y = torch.stack([data[(i + 1):(i + block_size + 1)] for i in ix])
         return x, y

@@ -1,6 +1,7 @@
 import configparser
-from dataclasses import dataclass, field, fields
+from dataclasses import dataclass, fields
 from pathlib import Path
+
 
 class Config:
     pass
@@ -27,7 +28,6 @@ class DataConfig(Config):
     n_layer: int
     dropout: float
 
-
     def __post_init__(self):
         field_types = {field.name: field.type for field in fields(self)}
         for attr, value in self.__dict__.items():
@@ -53,12 +53,3 @@ def config_from_file(section: str, into: Config, file_path: str) -> Config:
     config.sections()
 
     return into(**config[section])
-
-
-if __name__ == "__main__":
-    data_conf = config_from_file(
-        section='data',
-        into=DataConfig,
-        file_path=Path('src/config/config.cfg').resolve(),
-    )
-    print(data_conf)

@@ -30,17 +30,17 @@ class BigramLangaugeModel(nn.Module):
         B, T = idx.shape
 
         # idx  and targets are both (B, T) tensor of integers
-        tok_emb = self.token_embedding_table(idx) # (T,C)
-        pos_emb = self.token_embedding_table(torch.arange(T)) # (T,C)
-        x = tok_emb + pos_emb (B,T,C)
-        logits = self.lm_head(x) # (B,T,vocab_size)
+        tok_emb = self.token_embedding_table(idx)  # (T,C)
+        pos_emb = self.token_embedding_table(torch.arange(T))  # (T,C)
+        x = tok_emb + pos_emb(B, T)
+        logits = self.lm_head(x)  # (B,T,vocab_size)
 
         if targets is None:
             loss = None
         else:
             B, T, C = logits.shape
-            logits = logits.view(B*T, C)
-            targets = targets.view(B*T)
+            logits = logits.view(B * T, C)
+            targets = targets.view(B * T)
             loss = F.cross_entropy(logits, targets)
 
         return logits, loss
@@ -56,11 +56,11 @@ class BigramLangaugeModel(nn.Module):
             # get the predictions
             logits, loss = self(idx)
             # focus only on the last time step
-            logits = logits[:, -1, :] # becomes (B, C)
+            logits = logits[:, -1, :]  # becomes (B, C)
             # apply softmax to get probabilities
-            probs = F.softmax(logits, dim=-1) # (B, C)
+            probs = F.softmax(logits, dim=-1)  # (B, C)
             # sample from the distribution
-            idx_next = torch.multinomial(probs, num_samples=1) # (B, 1)
+            idx_next = torch.multinomial(probs, num_samples=1)  # (B, 1)
             # append sampled index to the running sequence
-            idx = torch.cat((idx, idx_next), dim=1) # (B, T+1)
+            idx = torch.cat((idx, idx_next), dim=1)  # (B, T+1)
         return idx

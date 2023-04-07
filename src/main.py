@@ -44,7 +44,7 @@ def preprocessing_factory(config: DataConfig) -> Preprocessing:
 
 def model_factory(preprocessing: Preprocessing, config: DataConfig):
     """
-    Responsible for building the model object from the availble deep learning models
+    Responsible for building the model object
 
     :param model_name: model used for learning
     :returns model: Contructed model to be used for training
@@ -64,23 +64,22 @@ def model_factory(preprocessing: Preprocessing, config: DataConfig):
 
 def optimizer_factory(model: nn.Module, config: DataConfig) -> torch.optim.Optimizer:
     """
-    Factory function to construct the pytorch optimizer for the model. Takes in a Config Object
-    to set hyper params.
+    Factory function to construct the pytorch optimizer for the model
 
     :param model: Model object passed into the optimizer
-    :param config: Configuration object containing the hyperparams (i.e learning rate)
+    :param config: Configuration object containing the hyperparams
     :returns: pytorch Optimizer object used for optimization
-    :raises OptimizerNotFoundError: Exception when none of the accepted optimizers are passed into the config
+    :raises OptimizerNotFoundError:
     """
     otimizer_map = {
-        'adamw':  torch.optim.AdamW,
+        'adamw': torch.optim.AdamW,
         'sgd': torch.optim.SGD,
         'ada_delta': torch.optim.Adadelta,
     }
     if optimizer := otimizer_map.get(config.optimizer):
-        logger.info(f"Selected Optimizer {config.optimizer} with learning rate: {config.learning_rate}")
-        return optimizer(model.parameters(), lr=float(config.learning_rate))
-    
+        logger.info("Selected Optimizer {config.optimizer} with learning rate: {config.learning_rate}")
+        return optimizer(model.parameters(), lr=config.learning_rate)
+
     logger.error(f"Optimizer {config.optimizer} not found from Config")
     raise OptimizerNotFoundError
 
@@ -88,12 +87,12 @@ def optimizer_factory(model: nn.Module, config: DataConfig) -> torch.optim.Optim
 @torch.no_grad()
 def estimate_loss(preprocessing: Preprocessing, model: nn.Module, eval_steps: int, curr_iter: int):
     """
-    Averages out the estimiation of the training and validation set to get an approximiate
-    estimation of the training data
+    Averages out the estimiation of the training and validation set to get an
+    approximiate estimation of the training data
 
-    :param preprocessing: Object containing the data required for model training
+    :param preprocessing: Object containing the data for model training
     :param model: The Pytorch model used for traning
-    :config DataConfig: Contains evalution 
+    :config DataConfig: Contains evalution
     """
     if curr_iter % eval_steps != 0:
         return
@@ -111,19 +110,14 @@ def estimate_loss(preprocessing: Preprocessing, model: nn.Module, eval_steps: in
     logger.info(f"step {curr_iter}: train loss {out['train']:.4f}, val loss {out['val']}")
 
 
-def train(
-        preprocessing: Preprocessing, 
-        model: nn.Module, 
-        optimizer: torch.optim.Optimizer, 
-        config: DataConfig
-    ):
+def train(preprocessing: Preprocessing, model: nn.Module, optimizer: torch.optim.Optimizer, config: DataConfig):
     """
     Generic execution of model training and validation of a given model
 
     :param preprocessing: Object containing the data required for model training
     :param model: The Pytorch model used for traning
     :param optimizer: Optimizer to be used with the model
-    :config DataConfig: Model and data configuration used for traning  
+    :config DataConfig: Model and data configuration used for traning
     """
     for iter in range(int(config.max_iters)):
         # sample a batch of data
@@ -149,8 +143,6 @@ def get_inference(preprocessing: Preprocessing, model: nn.Module, tokens: int):
     print(preprocessing.codec.decode(model.generate(context, max_new_tokens=tokens)[0].tolist()))
 
 
-
-
 def main():
     data_config = data_config_factory()
     preprocessing = preprocessing_factory(config=data_config)
@@ -159,22 +151,20 @@ def main():
         config=data_config,
     )
     optimizer = optimizer_factory(model=model_obj, config=data_config)
-    
+
     model = train(
-        preprocessing=preprocessing, 
+        preprocessing=preprocessing,
         model=model_obj,
-        optimizer=optimizer, 
+        optimizer=optimizer,
         config=data_config
     )
 
     # Get inference from model
     get_inference(
-        preprocessing=preprocessing, 
+        preprocessing=preprocessing,
         model=model,
         tokens=500
     )
-
-
 
 
 if __name__ == "__main__":
