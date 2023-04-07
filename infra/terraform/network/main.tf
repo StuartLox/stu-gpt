@@ -114,7 +114,7 @@ resource "aws_internet_gateway" "igw" {
 #NatGatways
 resource "aws_nat_gateway" "nat_gw" {
   allocation_id = aws_eip.eip.id
-  subnet_id     = element(aws_subnet.master_subnet.*.id, 0)
+  subnet_id     = element(aws_subnet.public_subnet.*.id, 0)
 
   tags = {
     Name = "Nat_gateway"
