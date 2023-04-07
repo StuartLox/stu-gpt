@@ -29,11 +29,3 @@ module "eks" {
   worker_subnet                 = module.vpc.worker_node_subnet
   subnet_ids                    = concat(module.vpc.master_subnet, module.vpc.worker_node_subnet)
 }
-
-# module "karpenter" {
-#   source                                  = "./karpenter"
-#   cluster_endpoint                        = module.eks.cluster_endpoint
-#   cluster_id                              = module.eks.cluster_id
-#   aws_iam_instance_profile_karpenter_name = module.eks.aws_iam_instance_profile_karpenter_name
-#   karpenter_controller_role_arn           = module.eks.karpenter_controller_role_arn
-# }

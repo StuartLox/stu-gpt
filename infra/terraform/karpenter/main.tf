@@ -1,11 +1,11 @@
-resource "helm_release" "karpenter" {
+resource "helm_release" "karpenter_helm" {
   namespace        = "karpenter"
   create_namespace = true
 
   name       = "karpenter"
   repository = "https://charts.karpenter.sh"
   chart      = "karpenter"
-  version    = "v0.16.3"
+  version    = "0.16.3"
 
   set {
     name  = "serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
