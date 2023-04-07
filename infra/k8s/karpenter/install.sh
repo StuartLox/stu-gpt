@@ -13,5 +13,5 @@ helm upgrade --install --namespace karpenter --create-namespace \
   --set serviceAccount.annotations."eks\.amazonaws\.com/role-arn"="arn:aws:iam::415646757531:role/karpenter-controller" \
   --set clusterName=${CLUSTER_NAME} \
   --set clusterEndpoint=${CLUSTER_ENDPOINT} \
-  --set aws.defaultInstanceProfile=KarpenterNodeInstanceProfile-${CLUSTER_NAME} \
+  --set aws.defaultInstanceProfile=KarpenterNodeInstanceProfile \
   --wait # for the defaulting webhook to install before creating a Provisioner
