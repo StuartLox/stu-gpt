@@ -115,7 +115,7 @@ def train(preprocessing: Preprocessing, model: nn.Module, optimizer: torch.optim
     :param preprocessing: Object containing the data required for model training
     :param model: The Pytorch model used for traning
     :param optimizer: Optimizer to be used with the model
-    :config DataConfig: Model and data configuration used for traning
+    :param config: Model and data configuration used for traning
     """
     for iter in range(int(config.max_iters)):
         # sample a batch of data
