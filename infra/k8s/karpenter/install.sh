@@ -1,4 +1,4 @@
-set -x 
+set -x
 
 export VERSION=0.16.3
 export CLUSTER_NAME=personal-eks

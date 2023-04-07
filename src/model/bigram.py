@@ -11,13 +11,14 @@ class BigramLangaugeModel(nn.Module):
     :param vocab_size: number of unique tokens from the training set
     :param token_embedding_table: Lookup table which stores embeddings
     """
+
     def __init__(self, vocab_size: int, n_embed: int = 32, block_size: int = 32):
         super().__init__()
         self.token_embedding_table = nn.Embedding(vocab_size, n_embed)
         self.position_embedding_table = nn.Embedding(block_size, n_embed)
         self.lm_head = nn.Linear(n_embed, vocab_size)
 
-    def forward(self, idx: int, targets: torch.Tensor = None):
+    def forward(self, idx: torch.Tensor, targets: torch.Tensor = None):
         """
         Computation to be executed each forward pass of the neural network
 

@@ -1,15 +1,13 @@
 import torch
 import torch.nn as nn
-
+from config.config import config_from_file
+from config.config import DataConfig
+from exceptions import ModelNotFoundError
+from exceptions import OptimizerNotFoundError
 from impl.preprocessing import Preprocessing
-from config.config import DataConfig, config_from_file
-from utils.custom_logger import setup_custom_logger
 from model.bigram import BigramLangaugeModel
 from model.gpt import GPTLanguageModel
-from exceptions import (
-    ModelNotFoundError,
-    OptimizerNotFoundError,
-)
+from utils.custom_logger import setup_custom_logger
 
 
 torch.manual_seed(1337)
@@ -24,7 +22,7 @@ def data_config_factory(file_path: str = 'config/config.cfg') -> DataConfig:
     return config_from_file(
         section='data',
         into=DataConfig,
-        file_path=file_path
+        file_path=file_path,
     )
 
 
@@ -133,7 +131,7 @@ def train(preprocessing: Preprocessing, model: nn.Module, optimizer: torch.optim
             preprocessing=preprocessing,
             model=model,
             eval_steps=int(config.eval_steps),
-            curr_iter=iter
+            curr_iter=iter,
         )
     return model
 
@@ -156,14 +154,14 @@ def main():
         preprocessing=preprocessing,
         model=model_obj,
         optimizer=optimizer,
-        config=data_config
+        config=data_config,
     )
 
     # Get inference from model
     get_inference(
         preprocessing=preprocessing,
         model=model,
-        tokens=500
+        tokens=500,
     )
 
 

@@ -1,4 +1,6 @@
-from typing import Dict, List
+from typing import Dict
+from typing import List
+from typing import Optional
 
 
 class Codec:
@@ -10,13 +12,14 @@ class Codec:
     :param: stoi: Map of the full training chars to encoded int
     :param: itos: Map of encoded int to
     """
-    def __init__(self, full_text: str):
-        chars: str = self._get_unique_chars(full_text)
-        self.vocab_size: int = len(chars)
-        self.stoi: Dict[str, int] = self._string_to_int(chars)
-        self.itos: Dict[int, str] = self._int_to_string(chars)
 
-    def _get_unique_chars(self, text: str) -> str:
+    def __init__(self, full_text: str):
+        chars: List[str] = self._get_unique_chars(full_text)
+        self.vocab_size: int = len(chars)
+        self.stoi: Dict = self._string_to_int(chars)
+        self.itos: Dict = self._int_to_string(chars)
+
+    def _get_unique_chars(self, text: str) -> List[str]:
         """
         Gets set of unique chars from full training data text
 
@@ -25,7 +28,7 @@ class Codec:
         """
         return sorted(list(set(text)))
 
-    def _string_to_int(self, chars: List[chr]) -> Dict[chr, int]:
+    def _string_to_int(self, chars: List[str]) -> Optional[Dict[chr, int]]:
         """
         Maps string to index based on a set of characters
 
@@ -37,7 +40,7 @@ class Codec:
 
         raise TypeError(f"Must provide List[chars], Recived {type(chars)}")
 
-    def _int_to_string(self, chars: str) -> Dict[int, chr]:
+    def _int_to_string(self, chars: str) -> Optional[Dict[int, chr]]:
         """
         Maps string to index based on a set of characters
 

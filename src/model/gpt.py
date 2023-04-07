@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
-from torch.nn import functional as F
 from config.config import DataConfig
+from torch.nn import functional as F
 
 
 class Head(nn.Module):

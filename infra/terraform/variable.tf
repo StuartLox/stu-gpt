@@ -28,4 +28,3 @@ variable "vpc_name" {
   description = "VPC name"
   default     = "personal-vpc"
 }
-

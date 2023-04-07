@@ -1,4 +1,4 @@
-# Summary 
+# Summary
 
 Generative Pre-trained Transformers (GPT) are a type of deep learning model that uses unsupervised learning to train a large neural network on a vast amount of text data. The main idea behind GPT is to pre-train a large neural network on a large corpus of text data, such as web pages or books, to learn general patterns and structures of language.
 
@@ -10,7 +10,7 @@ The resulting fine-tuned model can then be used to generate new text by sampling
 
 ## Transformer Architecture
 
-GPT is based primarily on transformer architecture which was introduced in 2017 in Google's paper "Attention is all you need". 
+GPT is based primarily on transformer architecture which was introduced in 2017 in Google's paper "Attention is all you need".
 
 ![transformer](assets/Transformer.png)
 
@@ -23,4 +23,3 @@ In the feedforward neural network operation, the model applies a non-linear tran
 In addition to the encoder, the Transformer architecture also includes positional encodings, which allow the model to understand the order of the input sequence.
 
 Overall, the Transformer architecture is highly effective in natural language processing tasks and has achieved state-of-the-art performance on many benchmarks.
-

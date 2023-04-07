@@ -1,5 +1,6 @@
 import configparser
-from dataclasses import dataclass, fields
+from dataclasses import dataclass
+from dataclasses import fields
 from pathlib import Path
 
 
@@ -37,7 +38,7 @@ class DataConfig(Config):
                     setattr(self, attr, cast_value)
 
 
-def config_from_file(section: str, into: Config, file_path: str) -> Config:
+def config_from_file(section: str, into: DataConfig, file_path: str) -> Config:
     """
     Builds Config Object from Config file
 

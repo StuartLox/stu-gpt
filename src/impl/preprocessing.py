@@ -1,6 +1,8 @@
-from config.config import DataConfig
-from typing import List, Tuple
+from typing import List
+from typing import Tuple
+
 import torch
+from config.config import DataConfig
 from utils.codec import Codec
 
 
@@ -10,12 +12,13 @@ class Preprocessing:
 
     :params: data: List[data]
     """
+
     def __init__(self, config: DataConfig):
         self.config = config
         self.codec = None
         self.vocab_size = None
 
-    def read_file(self, file_path: str) -> str:
+    def read_file(self, file_path: str) -> None:
         """
         reads file and returns raw string output
 
@@ -30,7 +33,7 @@ class Preprocessing:
         self.vocab_size = self.codec.vocab_size
         self.data = torch.tensor(self.codec.encode(self.full_text), dtype=torch.long)
 
-    def train_val_split(self) -> Tuple[List[int], List[int]]:
+    def train_val_split(self) -> None:
         """
         Split up the training data into train and validation data
 
@@ -56,7 +59,7 @@ class Preprocessing:
         block_size = self.config.block_size
 
         start = len(data) - block_size
-        ix = torch.randint(start, (batch_size, ))
+        ix = torch.randint(start, (batch_size,))
         x = torch.stack([data[i:i + block_size] for i in ix])
         y = torch.stack([data[(i + 1):(i + block_size + 1)] for i in ix])
         return x, y

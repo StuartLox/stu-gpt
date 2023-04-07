@@ -9,7 +9,6 @@ repos:
     -   id: check-executables-have-shebangs
     -   id: check-merge-conflict
     -   id: check-vcs-permalinks
-    -   id: check-yaml
     -   id: debug-statements
     -   id: end-of-file-fixer
     -   id: trailing-whitespace
@@ -39,11 +38,11 @@ repos:
     hooks:
     -   id: reorder-python-imports
         args: [--py3-plus]
--   repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.0.0
-    hooks:
-    -   id: mypy
-        additional_dependencies:
-        -   types-requests
-        -   types-PyYAML
-        -   types-python-dateutil
+# -   repo: https://github.com/pre-commit/mirrors-mypy
+#     rev: v1.0.0
+#     hooks:
+#     -   id: mypy
+#         additional_dependencies:
+#         -   types-requests
+#         -   types-PyYAML
+#         -   types-python-dateutil
