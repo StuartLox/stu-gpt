@@ -2,48 +2,83 @@
 Simple training loop; Boilerplate that could apply to any arbitrary neural network,
 so nothing in this file really has anything to do with GPT specifically.
 """
+from dataclasses import asdict
+from dataclasses import dataclass
+from typing import Dict
+from typing import OrderedDict
 
-from dataclasses import dataclass, asdict
-from collections import OrderedDict
-from typing import Optional, Any, Dict
-import os
-
-import torch
-from torch.utils.data import Dataset, DataLoader
-from torch.nn.parallel import DistributedDataParallel as DDP
-from torch.utils.data.distributed import DistributedSampler
-
-import boto3
-from urllib.parse import urlparse
 import fsspec
-import io
+import torch
+import torch.nn as nn
+from config.config import TrainConfig
+from torch.nn.parallel import DistributedDataParallel as DDP
+from torch.utils.data import DataLoader
+from torch.utils.data import Dataset
+from torch.utils.data.distributed import DistributedSampler
+from utils.custom_logger import setup_custom_logger
 
+
+logger = setup_custom_logger(__name__)
+
+
+@dataclass
+class Snapshot:
+    model_state: OrderedDict[str, torch.Tensor]
+    optimizer_state: Dict[str, str]
+    finished_epoch: int
+
+
+def upload_to_s3(snapshot: Dict, snapshot_path: str):
+    """
+    Uploads snapshot to S3
+    """
+    # TODO - Move to utilities and implement
+    logger.info(f"Uploading snapshot: {snapshot} to path {snapshot_path}")
 
 
 class Trainer:
+    """
+    Trainer encapsulates the required logic for distirbuted and standalone model training
 
-    def __init__(self, config: TrainConfig, model, optimizer, train_dataset, test_dataset=None):
-        self.config = trainer_config
+    :param config: Configuration inputs for model training
+    :param local_rank:  The rank of the process on the local machine (Should be same).
+    """
+
+    def __init__(
+            self,
+            config: TrainConfig,
+            local_rank: int,
+            global_rank: int,
+            model: nn.Module,
+            optimizer: torch.optim.Optimizer,
+            train_dataset,
+            test_dataset=None,
+    ):
+        self.config = config
         # set torchrun variables
-        self.local_rank = int(os.environ["LOCAL_RANK"])
-        self.global_rank = int(os.environ["RANK"])
+        self.local_rank = local_rank
+        self.global_rank = global_rank
         # data stuff
         self.train_dataset = train_dataset
         self.train_loader = self._prepare_dataloader(train_dataset)
         self.test_loader = self._prepare_dataloader(test_dataset) if test_dataset else None
         # initialize train states
         self.epochs_run = 0
-        self.model = model.to(self.local_rank)
+        self.model = self._get_model(model)
         self.optimizer = optimizer
         self.save_every = self.config.save_every
-        if self.config.use_amp:
-            self.scaler = torch.cuda.amp.GradScaler()
         # load snapshot if available. only necessary on the first node.
         if self.config.snapshot_path is None:
             self.config.snapshot_path = "snapshot.pt"
         self._load_snapshot()
         # wrap with DDP. this step will synch model across all the processes.
-        self.model = DDP(self.model, device_ids=[self.local_rank])
+
+    def _get_model(self, model: nn.Module):
+        if self.config.device == "cpu":
+            return model
+
+        model = model.to(self.local_rank)
+        return DDP(self.model, device_ids=[self.local_rank])
 
     def _prepare_dataloader(self, dataset: Dataset):
         return DataLoader(
@@ -52,7 +87,7 @@ class Trainer:
             pin_memory=True,
             shuffle=False,
             num_workers=self.config.data_loader_workers,
-            sampler=DistributedSampler(dataset)
+            sampler=DistributedSampler(dataset),
         )
 
     def _load_snapshot(self):
@@ -61,14 +96,14 @@ class Trainer:
             with snapshot as f:
                 snapshot_data = torch.load(f, map_location="cpu")
         except FileNotFoundError:
-            print("Snapshot not found. Training model from scratch")
+            logger.error("Snapshot not found. Training model from scratch")
             return
 
         snapshot = Snapshot(**snapshot_data)
         self.model.load_state_dict(snapshot.model_state)
         self.optimizer.load_state_dict(snapshot.optimizer_state)
         self.epochs_run = snapshot.finished_epoch
-        print(f"Resuming training from snapshot at Epoch {self.epochs_run}")
+        logger.info(f"Resuming training from snapshot at Epoch {self.epochs_run}")
 
     def _run_batch(self, source, targets, train: bool = True) -> float:
         with torch.set_grad_enabled(train), torch.amp.autocast(device_type="cuda", dtype=torch.float16, enabled=(self.config.use_amp)):
@@ -92,11 +127,12 @@ class Trainer:
         dataloader.sampler.set_epoch(epoch)
         for iter, (source, targets) in enumerate(dataloader):
             step_type = "Train" if train else "Eval"
-            source = source.to(self.local_rank)
-            targets = targets.to(self.local_rank)
+            if self.config.device == "gpu":
+                source = source.to(self.local_rank)
+                targets = targets.to(self.local_rank)
             batch_loss = self._run_batch(source, targets, train)
             if iter % 100 == 0:
-                print(f"[GPU{self.global_rank}] Epoch {epoch} | Iter {iter} | {step_type} Loss {batch_loss:.5f}")
+                logger.info(f"[{self.config.device.upper()}-{self.global_rank}] Epoch {epoch} | Iter {iter} | {step_type} Loss {batch_loss:.5f}")
 
     def _save_snapshot(self, epoch):
         # capture snapshot
@@ -105,7 +141,7 @@ class Trainer:
         snapshot = Snapshot(
             model_state=raw_model.state_dict(),
             optimizer_state=self.optimizer.state_dict(),
-            finished_epoch=epoch
+            finished_epoch=epoch,
         )
         # save snapshot
         snapshot = asdict(snapshot)
@@ -114,7 +150,7 @@ class Trainer:
         else:
             torch.save(snapshot, self.config.snapshot_path)
 
-        print(f"Snapshot saved at epoch {epoch}")
+        logger.info(f"Snapshot saved at epoch {epoch}")
 
     def train(self):
         for epoch in range(self.epochs_run, self.config.max_epochs):
