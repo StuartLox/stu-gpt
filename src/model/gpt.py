@@ -1,20 +1,20 @@
 import torch
 import torch.nn as nn
-from config.config import DataConfig
+from config.config import Config
 from torch.nn import functional as F
 
 
 class Head(nn.Module):
     """ one head of self-attention """
 
-    def __init__(self, config: DataConfig, head_size: int):
+    def __init__(self, config: Config, head_size: int):
         super().__init__()
-        self.key = nn.Linear(config.n_embd, head_size, bias=False)
-        self.query = nn.Linear(config.n_embd, head_size, bias=False)
-        self.value = nn.Linear(config.n_embd, head_size, bias=False)
-        self.register_buffer('tril', torch.tril(torch.ones(config.block_size, config.block_size)))
+        self.key = nn.Linear(config.model.n_embd, head_size, bias=False)
+        self.query = nn.Linear(config.model.n_embd, head_size, bias=False)
+        self.value = nn.Linear(config.model.n_embd, head_size, bias=False)
+        self.register_buffer('tril', torch.tril(torch.ones(config.data.block_size, config.data.block_size)))
 
-        self.dropout = nn.Dropout(config.dropout)
+        self.dropout = nn.Dropout(config.model.dropout)
 
     def forward(self, x):
         # input of size (batch, time-step, channels)
@@ -45,12 +45,12 @@ class MultiHeadAttention(nn.Module):
     at different positions.
     """
 
-    def __init__(self, config: DataConfig):
+    def __init__(self, config: Config):
         super().__init__()
-        head_size = config.n_embd // config.n_head
-        self.heads = nn.ModuleList([Head(config=config, head_size=head_size) for _ in range(config.n_head)])
-        self.proj = nn.Linear(head_size * config.n_head, config.n_embd)
-        self.dropout = nn.Dropout(config.dropout)
+        head_size = config.model.n_embd // config.model.n_head
+        self.heads = nn.ModuleList([Head(config=config, head_size=head_size) for _ in range(config.model.n_head)])
+        self.proj = nn.Linear(head_size * config.model.n_head, config.model.n_embd)
+        self.dropout = nn.Dropout(config.model.dropout)
 
     def forward(self, x):
         out = torch.cat([h(x) for h in self.heads], dim=-1)
@@ -61,13 +61,13 @@ class MultiHeadAttention(nn.Module):
 class FeedFoward(nn.Module):
     """ a simple linear layer followed by a non-linearity """
 
-    def __init__(self, config: DataConfig):
+    def __init__(self, config: Config):
         super().__init__()
         self.net = nn.Sequential(
-            nn.Linear(config.n_embd, 4 * config.n_embd),
+            nn.Linear(config.model.n_embd, 4 * config.model.n_embd),
             nn.ReLU(),
-            nn.Linear(4 * config.n_embd, config.n_embd),
-            nn.Dropout(config.dropout),
+            nn.Linear(4 * config.model.n_embd, config.model.n_embd),
+            nn.Dropout(config.model.dropout),
         )
 
     def forward(self, x):
@@ -80,13 +80,13 @@ class Block(nn.Module):
     followed by computation runs foward pass in the NN.
     """
 
-    def __init__(self, config: DataConfig):
+    def __init__(self, config: Config):
         # n_embd: embedding dimension, n_head: the number of heads we'd like
         super().__init__()
         self.sa = MultiHeadAttention(config)
         self.ffwd = FeedFoward(config)
-        self.ln1 = nn.LayerNorm(config.n_embd)
-        self.ln2 = nn.LayerNorm(config.n_embd)
+        self.ln1 = nn.LayerNorm(config.model.n_embd)
+        self.ln2 = nn.LayerNorm(config.model.n_embd)
 
     def forward(self, x):
         x = x + self.sa(self.ln1(x))
@@ -96,16 +96,16 @@ class Block(nn.Module):
 
 class GPTLanguageModel(nn.Module):
 
-    def __init__(self, vocab_size: int, config: DataConfig):
+    def __init__(self, vocab_size: int, config: Config):
         super().__init__()
         # each token directly reads off the logits for the next token from a lookup table
         self.config = config
 
-        self.token_embedding_table = nn.Embedding(vocab_size, config.n_embd)
-        self.position_embedding_table = nn.Embedding(config.block_size, config.n_embd)
-        self.blocks = nn.Sequential(*[Block(config) for _ in range(config.n_layer)])
-        self.ln_f = nn.LayerNorm(config.n_embd)  # final layer norm
-        self.lm_head = nn.Linear(config.n_embd, vocab_size)
+        self.token_embedding_table = nn.Embedding(vocab_size, config.model.n_embd)
+        self.position_embedding_table = nn.Embedding(config.data.block_size, config.model.n_embd)
+        self.blocks = nn.Sequential(*[Block(config) for _ in range(config.model.n_layer)])
+        self.ln_f = nn.LayerNorm(config.model.n_embd)  # final layer norm
+        self.lm_head = nn.Linear(config.model.n_embd, vocab_size)
 
         # better init, not covered in the original GPT video, but important, will cover in followup video
         self.apply(self._init_weights)
@@ -143,7 +143,7 @@ class GPTLanguageModel(nn.Module):
         # idx is (B, T) array of indices in the current context
         for _ in range(max_new_tokens):
             # crop idx to the last block_size tokens
-            idx_cond = idx[:, -self.config.block_size:]
+            idx_cond = idx[:, -self.config.model.block_size:]
             # get the predictions
             logits, loss = self(idx_cond)
             # focus only on the last time step

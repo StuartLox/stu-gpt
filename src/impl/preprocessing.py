@@ -3,6 +3,7 @@ from typing import Tuple
 
 import torch
 from config.config import DataConfig
+from config.config import TrainConfig
 from utils.codec import Codec
 
 
@@ -13,8 +14,9 @@ class Preprocessing:
     :params: data: List[data]
     """
 
-    def __init__(self, config: DataConfig):
-        self.config = config
+    def __init__(self, train_conf: TrainConfig, data_conf: DataConfig):
+        self.train_conf = train_conf
+        self.data_conf = data_conf
         self.codec = None
         self.vocab_size = None
 
@@ -39,7 +41,7 @@ class Preprocessing:
 
         data: List[int]: List of text encoded integers
         """
-        n = int(len(self.data) * self.config.train_val_split)
+        n = int(len(self.data) * self.data_conf.train_val_split)
         self.train_data = self.data[:n]
         self.val_data = self.data[n:]
 
@@ -55,8 +57,8 @@ class Preprocessing:
         if split == 'val':
             data = self.val_data
 
-        batch_size = self.config.batch_size
-        block_size = self.config.block_size
+        batch_size = self.train_conf.batch_size
+        block_size = self.data_conf.block_size
 
         start = len(data) - block_size
         ix = torch.randint(start, (batch_size,))
