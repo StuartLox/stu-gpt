@@ -1,25 +1,28 @@
 # Summary
 
-Generative Pre-trained Transformers (GPT) are a type of deep learning model that uses unsupervised learning to train a large neural network on a vast amount of text data. The main idea behind GPT is to pre-train a large neural network on a large corpus of text data, such as web pages or books, to learn general patterns and structures of language.
+Stu-GPT is a platform which enables massive parralel processing and training of Large Langauge Models (LLMs) on AWS.
 
-During the pre-training phase, the neural network learns to predict the next word in a sequence of words. This is done by feeding the network a sequence of words and asking it to predict the next word in the sequence. The network is trained to minimize the difference between its predictions and the actual next words in the text.
+## Model Architecture
 
-Once the pre-training is complete, the GPT model can be fine-tuned for a specific task, such as text generation, text classification, or question-answering. Fine-tuning involves training the model on a smaller dataset of labeled examples that are specific to the target task. During fine-tuning, the weights of the pre-trained model are adjusted to fit the task-specific data.
+The primary model used is a Generative Pre-trained Transformers (GPT) which is a deep learning model which makes use of the transformer architecture.
 
-The resulting fine-tuned model can then be used to generate new text by sampling from the learned distribution of words and sequences. GPT models have achieved impressive results in various natural language processing tasks, such as language translation, text summarization, and dialogue generation.
-
-## Transformer Architecture
-
-GPT is based primarily on transformer architecture which was introduced in 2017 in Google's paper "Attention is all you need".
+Transformers
+rely on a mechanism of self-attention enables positional encoding and prediction  of the next best token based on the full input sequence of the model.
 
 ![transformer](assets/Transformer.png)
 
-The encoder takes as input a sequence of embeddings (representations of words or subwords) and generates a sequence of encoded embeddings, which capture the relationships between the words in the input sequence. Each layer in the encoder performs two operations: multi-head self-attention and a feedforward neural network.
+## Training
 
-In the multi-head self-attention operation, the model calculates a weighted sum of the input embeddings based on their relevance to each other. This allows the model to capture long-range dependencies between words in the input sequence.
+The training of the model leverages Pytorch's DDP module for distributed training. implements data parallelism at the module level which runs on GPU optimized hardware.
 
-In the feedforward neural network operation, the model applies a non-linear transformation to the output of the self-attention operation.
 
-In addition to the encoder, the Transformer architecture also includes positional encodings, which allow the model to understand the order of the input sequence.
+## Deployment Architecture
 
-Overall, the Transformer architecture is highly effective in natural language processing tasks and has achieved state-of-the-art performance on many benchmarks.
+* **EKS**: Used to orchestrate and host model training, serving and monitoring.
+* **Karptener**: Provides Groupless cluster autoscaling to simplify scaling of distributed training jobs on K8s. In addition, Karpenter is used to provision a spot instance fleet to enable usage of GPU Spot instances.
+* **Trainer**: The trainer is built on Stateful Set to enable fault tolerent parrellel training. With Karpenter and Pytorch's DDP the platform can abitrarily scale based on the required compute workload.
+* **Chat-Api**: Performs the model inferences which insert the text prompts and fetches the returned response to the client.
+
+![transformer](assets/aws-architecture.png)
+
+#
