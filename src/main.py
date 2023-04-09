@@ -1,4 +1,6 @@
 import os
+from typing import Any
+from typing import Tuple
 
 import hydra
 import torch
@@ -108,61 +110,12 @@ def optimizer_factory(model: nn.Module, config: OptimizerConfig) -> torch.optim.
     raise OptimizerNotFoundError
 
 
-@torch.no_grad()
-def estimate_loss(preprocessing: Preprocessing, model: nn.Module, eval_steps: int, curr_iter: int):
+def get_train_objs(data_cfg: DataConfig) -> Tuple[Any]:
     """
-    Averages out the estimiation of the training and validation set to get an
-    approximiate estimation of the training data
+    Gets the required Training Objects for model training
 
-    :param preprocessing: Object containing the data for model training
-    :param model: The Pytorch model used for traning
-    :config DataConfig: Contains evalution
+    :param:
     """
-    if curr_iter % eval_steps != 0:
-        return
-
-    out = {}
-    model.eval()
-    for split in ['train', 'val']:
-        losses = torch.zeros(eval_steps)
-        for k in range(eval_steps):
-            X, Y = preprocessing.get_batch(split)
-            _, loss = model(X, Y)
-            losses[k] = loss.item()
-        out[split] = losses.mean()
-    model.train()
-    logger.info(f"step {curr_iter}: train loss {out['train']:.4f}, val loss {out['val']}")
-
-
-def train(preprocessing: Preprocessing, model: nn.Module, optimizer: torch.optim.Optimizer, config: DataConfig):
-    """
-    Generic execution of model training and validation of a given model
-
-    :param preprocessing: Object containing the data required for model training
-    :param model: The Pytorch model used for traning
-    :param optimizer: Optimizer to be used with the model
-    :param config: Model and data configuration used for traning
-    """
-    for iter in range(int(config.max_iters)):
-        # sample a batch of data
-        xb, yb = preprocessing.get_batch('train')
-
-        # evaluate the loss
-        _, loss = model(xb, yb)
-        optimizer.zero_grad(set_to_none=True)
-        loss.backward()
-        optimizer.step()
-
-        estimate_loss(
-            preprocessing=preprocessing,
-            model=model,
-            eval_steps=int(config.eval_steps),
-            curr_iter=iter,
-        )
-    return model
-
-
-def get_train_objs(data_cfg: DataConfig):
     dataset = CharDataset(data_cfg)
     train_len = int(len(dataset) * data_cfg.train_split)
     train_set, test_set = random_split(dataset, [train_len, len(dataset) - train_len])
