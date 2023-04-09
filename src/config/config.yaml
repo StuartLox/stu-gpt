@@ -1,7 +1,5 @@
 data:
   path: 'data/input.txt'
-  training_file: ./data/input.txt
-  train_val_split: 0.9
   train_split: 0.9
   block_size: 128
   truncate: 0.05

@@ -60,7 +60,7 @@ def preprocessing_factory(config: Config) -> Preprocessing:
     :returns: preprocessing: contains batches, training, and test data
     """
     preprocessing = Preprocessing(data_conf=config.data, train_conf=config.train)
-    preprocessing.read_file(config.data.training_file)
+    preprocessing.read_file(config.data.path)
     preprocessing.encode_text()
     preprocessing.train_val_split()
     return preprocessing

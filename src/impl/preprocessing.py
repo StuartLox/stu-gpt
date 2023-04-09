@@ -41,7 +41,7 @@ class Preprocessing:
 
         data: List[int]: List of text encoded integers
         """
-        n = int(len(self.data) * self.data_conf.train_val_split)
+        n = int(len(self.data) * self.data_conf.train_split)
         self.train_data = self.data[:n]
         self.val_data = self.data[n:]
 

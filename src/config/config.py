@@ -8,9 +8,7 @@ class DataConfig:
     processing the text data
     """
     path: str
-    training_file: str
     train_split: float
-    train_val_split: float
     block_size: int
     truncate: float
 
