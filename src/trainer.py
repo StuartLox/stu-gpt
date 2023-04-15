@@ -78,7 +78,7 @@ class Trainer:
             return model
 
         model = model.to(self.local_rank)
-        return DDP(self.model, device_ids=[self.local_rank])
+        return DDP(model, device_ids=[self.local_rank])
 
     def _prepare_dataloader(self, dataset: Dataset):
         return DataLoader(

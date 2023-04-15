@@ -30,6 +30,7 @@ logger = setup_custom_logger(module)
 
 
 def ddp_setup(train_conf: TrainConfig):
+    logger.info(f"GPU CUDA Enabled - {torch.cuda.is_available()}")
     if train_conf.device == "gpu":
         backend = 'nccl'
     else:
@@ -130,7 +131,7 @@ def get_inference(preprocessing: Preprocessing, model: nn.Module, tokens: int):
 
 @hydra.main(version_base=None, config_path="config", config_name="config")
 def main(cfg: DictConfig):
-
+    print(cfg)
     config = config_factory(cfg)
     ddp_setup(config.train)
 
