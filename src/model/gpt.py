@@ -49,7 +49,7 @@ class MultiHeadAttention(nn.Module):
         super().__init__()
         head_size = config.model.n_embd // config.model.n_head
         self.heads = nn.ModuleList([Head(config=config, head_size=head_size) for _ in range(config.model.n_head)])
-        self.proj = nn.Linear(head_size * config.model.n_head, config.model.n_embd)
+        self.proj = nn.Linear(head_size * config.model.n_head, config.model.n_embd, device=config.train.device)
         self.dropout = nn.Dropout(config.model.dropout)
 
     def forward(self, x):
@@ -101,8 +101,8 @@ class GPTLanguageModel(nn.Module):
         # each token directly reads off the logits for the next token from a lookup table
         self.config = config
 
-        self.token_embedding_table = nn.Embedding(vocab_size, config.model.n_embd)
-        self.position_embedding_table = nn.Embedding(config.data.block_size, config.model.n_embd)
+        self.token_embedding_table = nn.Embedding(vocab_size, config.model.n_embd, device=config.train.device)
+        self.position_embedding_table = nn.Embedding(config.data.block_size, config.model.n_embd, device=config.train.device)
         self.blocks = nn.Sequential(*[Block(config) for _ in range(config.model.n_layer)])
         self.ln_f = nn.LayerNorm(config.model.n_embd)  # final layer norm
         self.lm_head = nn.Linear(config.model.n_embd, vocab_size)
