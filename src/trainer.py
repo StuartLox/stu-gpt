@@ -127,7 +127,7 @@ class Trainer:
         dataloader.sampler.set_epoch(epoch)
         for iter, (source, targets) in enumerate(dataloader):
             step_type = "Train" if train else "Eval"
-            if self.config.device == "gpu":
+            if self.config.device == "cuda":
                 source = source.to(self.local_rank)
                 targets = targets.to(self.local_rank)
             batch_loss = self._run_batch(source, targets, train)
