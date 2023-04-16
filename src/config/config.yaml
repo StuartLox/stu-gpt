@@ -23,7 +23,7 @@ train:
   batch_size: 216
   max_iters: 5000
   eval_steps: 1
-  device: 'cuda'
+  device: 'cpu'
   grad_norm_clip: 1.0
   snapshot_path: gpt_snapshot.pt
   use_amp: False
